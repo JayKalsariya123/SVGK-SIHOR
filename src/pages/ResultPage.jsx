@@ -25,34 +25,39 @@ const ResultPage = () => {
     fetchResult();
   }, [className, rollNumber]);
 
-  const downloadResult = async () => {
-    if (!resultRef.current) return;
+const downloadResult = async () => {
+  if (!resultRef.current) return;
 
-    const canvas = await html2canvas(resultRef.current, {
-      scale: 2,
-      useCORS: true,
-      logging: false,
-      windowWidth: resultRef.current.scrollWidth,
-      windowHeight: resultRef.current.scrollHeight
-    });
+  const scaleFactor = window.devicePixelRatio > 1 ? window.devicePixelRatio : 2;
 
-    const imgWidth = 210; 
-    const imgHeight = (canvas.height * imgWidth) / canvas.width;
+  const canvas = await html2canvas(resultRef.current, {
+    scale: scaleFactor,
+    useCORS: true,
+    logging: false,
+    width: resultRef.current.scrollWidth,
+    height: resultRef.current.scrollHeight,
+    windowWidth: document.documentElement.clientWidth,
+    windowHeight: document.documentElement.clientHeight
+  });
 
-    const pdf = new jsPDF('p', 'mm', 'a4');
-    pdf.addImage(
-      canvas.toDataURL('image/png'),
-      'PNG',
-      0,
-      0,
-      imgWidth,
-      imgHeight,
-      undefined,
-      'FAST'
-    );
+  const imgWidth = 210; 
+  const imgHeight = (canvas.height * imgWidth) / canvas.width;
 
-    pdf.save(`Result_${resultData.name}_${className}.pdf`);
-  };
+  const pdf = new jsPDF('p', 'mm', 'a4');
+  pdf.addImage(
+    canvas.toDataURL('image/png'),
+    'PNG',
+    0,
+    0,
+    imgWidth,
+    imgHeight,
+    undefined,
+    'FAST'
+  );
+
+  pdf.save(`Result_${resultData.name}_${className}.pdf`);
+};
+
 
   if (error) return <div className="text-center text-red-600 p-4">{error}</div>;
   if (!resultData) return <div className="text-center p-4">Loading...</div>;
